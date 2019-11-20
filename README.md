@@ -1,2 +1,0 @@
-# credissimo
-Credissimo task
