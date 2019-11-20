@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\DataFixer;
 use App\Deposits;
-use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
@@ -50,15 +50,7 @@ class addInterests extends Command
             exit();
         }
 
-        $client = new Client();
-
-        $res = $client->get('http://data.fixer.io/api/latest?access_key=0d52da9f2090212bec148d7cd9d858b1');
-
-        if ($res->getStatusCode() != '200') {
-            $this->info('Cannot get currency rates for today' . "\n");
-            exit();
-        }
-
+        $BGNToUSD = DataFixer::getTodaysRate();
 
         DB::beginTransaction();
 
@@ -73,10 +65,6 @@ class addInterests extends Command
 
             $dailyInterest = $depositsSum * 0.01;
             $currentDepositsSum = $depositsSum * 0.01;
-
-            $rates = json_decode($res->getBody()->getContents());
-
-            $BGNToUSD = $rates->rates->USD / $rates->rates->BGN;
 
             $dailyInterestUSD = $dailyInterest * $BGNToUSD;
             $currentDepositsSumUSD = $currentDepositsSum * $BGNToUSD;
